@@ -50,6 +50,15 @@ PIXI.Graphics = function()
     this.graphicsData = [];
 
     /**
+     * Contains the gradient fill data
+     *
+     * @property gradientFill
+     * @type Object
+     * @private
+     */
+    this.gradientFill = null;
+
+    /**
      * The tint applied to the graphic shape. This is a hex value. Apply a value of 0xFFFFFF to reset the tint.
      *
      * @property tint
@@ -504,6 +513,7 @@ PIXI.Graphics.prototype.arc = function(cx, cy, radius, startAngle, endAngle, ant
  */
 PIXI.Graphics.prototype.beginFill = function(color, alpha)
 {
+    this.gradientFill = null;
     this.filling = true;
     this.fillColor = color || 0;
     this.fillAlpha = (alpha === undefined) ? 1 : alpha;
@@ -520,6 +530,39 @@ PIXI.Graphics.prototype.beginFill = function(color, alpha)
     return this;
 };
 
+PIXI.Graphics.prototype.beginLinearGradientFill = function(x1, y1, x2, y2, colors, alpha) 
+{
+    this.gradientFill = {
+        linear: true,
+        x1: x1,
+        y1: y1,
+        x2: x2,
+        y2: y2,
+        colors: colors || []
+    };
+    this.filling = true;
+    this.fillColor = 0;
+    this.fillAlpha = (alpha == undefined) ? 1 : alpha;
+}
+
+
+PIXI.Graphics.prototype.beginRadialGradientFill = function(cx1, cy1, radius1, cx2, cy2, radius2, colors, alpha) 
+{
+    this.gradientFill = {
+        linear: false,
+        cx1: cx1,
+        cy1: cy1,
+        cx2: cx2,
+        cy2: cy2,
+        radius1: radius1,
+        radius2: radius2,
+        colors: colors || []
+    };
+    this.filling = true;
+    this.fillColor = 0;
+    this.fillAlpha = (alpha == undefined) ? 1 : alpha;
+}
+
 /**
  * Applies a fill to the lines and shapes that were added since the last call to the beginFill() method.
  *
@@ -529,6 +572,7 @@ PIXI.Graphics.prototype.beginFill = function(color, alpha)
 PIXI.Graphics.prototype.endFill = function()
 {
     this.filling = false;
+    this.gradientFill = null;
     this.fillColor = null;
     this.fillAlpha = 1;
 
@@ -1083,7 +1127,7 @@ PIXI.Graphics.prototype.drawShape = function(shape)
 
     this.currentPath = null;
 
-    var data = new PIXI.GraphicsData(this.lineWidth, this.lineColor, this.lineAlpha, this.fillColor, this.fillAlpha, this.filling, shape);
+    var data = new PIXI.GraphicsData(this.lineWidth, this.lineColor, this.lineAlpha, this.fillColor, this.fillAlpha, this.filling, shape, this.gradientFill);
     
     this.graphicsData.push(data);
     
@@ -1104,7 +1148,7 @@ PIXI.Graphics.prototype.drawShape = function(shape)
  * @class GraphicsData
  * @constructor
  */
-PIXI.GraphicsData = function(lineWidth, lineColor, lineAlpha, fillColor, fillAlpha, fill, shape)
+PIXI.GraphicsData = function(lineWidth, lineColor, lineAlpha, fillColor, fillAlpha, fill, shape, gradientFill)
 {
     this.lineWidth = lineWidth;
     this.lineColor = lineColor;
@@ -1115,6 +1159,13 @@ PIXI.GraphicsData = function(lineWidth, lineColor, lineAlpha, fillColor, fillAlp
     this.fillAlpha = fillAlpha;
     this._fillTint = fillColor;
     this.fill = fill;
+
+    if (gradientFill) {
+        this.gradientFill = {};
+        for (var key in gradientFill) {
+            this.gradientFill[key] = gradientFill[key];
+        }
+    }
 
     this.shape = shape;
     this.type = shape.type;

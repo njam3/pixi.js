@@ -40,6 +40,8 @@ PIXI.CanvasGraphics.renderGraphics = function(graphics, context)
         var fillColor = data._fillTint;
         var lineColor = data._lineTint;
 
+        var gradientFill = this.getGradient(data.gradientFill, context);
+
         context.lineWidth = data.lineWidth;
 
         if(data.type === PIXI.Graphics.POLY)
@@ -69,7 +71,7 @@ PIXI.CanvasGraphics.renderGraphics = function(graphics, context)
             if(data.fill)
             {
                 context.globalAlpha = data.fillAlpha * worldAlpha;
-                context.fillStyle = '#' + ('00000' + ( fillColor | 0).toString(16)).substr(-6);
+                context.fillStyle = gradientFill || '#' + ('00000' + ( fillColor | 0).toString(16)).substr(-6);
                 context.fill();
             }
             if(data.lineWidth)
@@ -85,7 +87,7 @@ PIXI.CanvasGraphics.renderGraphics = function(graphics, context)
             if(data.fillColor || data.fillColor === 0)
             {
                 context.globalAlpha = data.fillAlpha * worldAlpha;
-                context.fillStyle = '#' + ('00000' + ( fillColor | 0).toString(16)).substr(-6);
+                context.fillStyle = gradientFill || '#' + ('00000' + ( fillColor | 0).toString(16)).substr(-6);
                 context.fillRect(shape.x, shape.y, shape.width, shape.height);
 
             }
@@ -106,7 +108,7 @@ PIXI.CanvasGraphics.renderGraphics = function(graphics, context)
             if(data.fill)
             {
                 context.globalAlpha = data.fillAlpha * worldAlpha;
-                context.fillStyle = '#' + ('00000' + ( fillColor | 0).toString(16)).substr(-6);
+                context.fillStyle = gradientFill || '#' + ('00000' + ( fillColor | 0).toString(16)).substr(-6);
                 context.fill();
             }
             if(data.lineWidth)
@@ -147,7 +149,7 @@ PIXI.CanvasGraphics.renderGraphics = function(graphics, context)
             if(data.fill)
             {
                 context.globalAlpha = data.fillAlpha * worldAlpha;
-                context.fillStyle = '#' + ('00000' + ( fillColor | 0).toString(16)).substr(-6);
+                context.fillStyle = gradientFill || '#' + ('00000' + ( fillColor | 0).toString(16)).substr(-6);
                 context.fill();
             }
             if(data.lineWidth)
@@ -183,7 +185,7 @@ PIXI.CanvasGraphics.renderGraphics = function(graphics, context)
             if(data.fillColor || data.fillColor === 0)
             {
                 context.globalAlpha = data.fillAlpha * worldAlpha;
-                context.fillStyle = '#' + ('00000' + ( fillColor | 0).toString(16)).substr(-6);
+                context.fillStyle = gradientFill || '#' + ('00000' + ( fillColor | 0).toString(16)).substr(-6);
                 context.fill();
 
             }
@@ -310,6 +312,25 @@ PIXI.CanvasGraphics.renderGraphicsMask = function(graphics, context)
             context.closePath();
         }
     }
+};
+
+PIXI.CanvasGraphics.getGradient = function(grd, context) {
+    if (!grd)
+        return null;
+
+    var gradientObj;
+    if (grd.linear) {
+        gradientObj = context.createLinearGradient(grd.x1, grd.y1, grd.x2, grd.y2);
+        
+    } else {
+        gradientObj = context.createRadialGradient(grd.cx1, grd.cy1, grd.radius1, 
+                                                   grd.cx2, grd.cy2, grd.radius2);
+    }
+    for (var i=0; i<grd.colors.length; i++) {
+        var gcolor = grd.colors[i];
+        gradientObj.addColorStop(gcolor[0], gcolor[1]);
+    }
+    return gradientObj;
 };
 
 PIXI.CanvasGraphics.updateGraphicsTint = function(graphics)

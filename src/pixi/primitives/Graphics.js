@@ -530,7 +530,7 @@ PIXI.Graphics.prototype.beginFill = function(color, alpha)
     return this;
 };
 
-PIXI.Graphics.prototype.beginLinearGradientFill = function(x1, y1, x2, y2, colors, alpha) 
+PIXI.Graphics.prototype.beginLinearGradientFill = function(x1, y1, x2, y2, colors, alpha)
 {
     this.gradientFill = {
         linear: true,
@@ -542,11 +542,11 @@ PIXI.Graphics.prototype.beginLinearGradientFill = function(x1, y1, x2, y2, color
     };
     this.filling = true;
     this.fillColor = 0;
-    this.fillAlpha = (alpha == undefined) ? 1 : alpha;
-}
+    this.fillAlpha = (alpha === undefined) ? 1 : alpha;
+};
 
 
-PIXI.Graphics.prototype.beginRadialGradientFill = function(cx1, cy1, radius1, cx2, cy2, radius2, colors, alpha) 
+PIXI.Graphics.prototype.beginRadialGradientFill = function(cx1, cy1, radius1, cx2, cy2, radius2, colors, alpha)
 {
     this.gradientFill = {
         linear: false,
@@ -560,8 +560,8 @@ PIXI.Graphics.prototype.beginRadialGradientFill = function(cx1, cy1, radius1, cx
     };
     this.filling = true;
     this.fillColor = 0;
-    this.fillAlpha = (alpha == undefined) ? 1 : alpha;
-}
+    this.fillAlpha = (alpha === undefined) ? 1 : alpha;
+};
 
 /**
  * Applies a fill to the lines and shapes that were added since the last call to the beginFill() method.

@@ -1,4 +1,15 @@
 /**
+ * @license
+ * pixi.js - v2.2.0
+ * Copyright (c) 2012-2014, Mat Groves
+ * http://goodboydigital.com/
+ *
+ * Compiled: 2014-12-16
+ *
+ * pixi.js is licensed under the MIT License.
+ * http://www.opensource.org/licenses/mit-license.php
+ */
+/**
  * @author Mat Groves http://matgroves.com/ @Doormat23
  */
 
@@ -11161,6 +11172,8 @@ PIXI.CanvasGraphics.renderGraphics = function(graphics, context)
         var fillColor = data._fillTint;
         var lineColor = data._lineTint;
 
+        var gradientFill = this.getGradient(data.gradientFill, context);
+
         context.lineWidth = data.lineWidth;
 
         if(data.type === PIXI.Graphics.POLY)
@@ -11190,7 +11203,7 @@ PIXI.CanvasGraphics.renderGraphics = function(graphics, context)
             if(data.fill)
             {
                 context.globalAlpha = data.fillAlpha * worldAlpha;
-                context.fillStyle = '#' + ('00000' + ( fillColor | 0).toString(16)).substr(-6);
+                context.fillStyle = gradientFill || '#' + ('00000' + ( fillColor | 0).toString(16)).substr(-6);
                 context.fill();
             }
             if(data.lineWidth)
@@ -11206,7 +11219,7 @@ PIXI.CanvasGraphics.renderGraphics = function(graphics, context)
             if(data.fillColor || data.fillColor === 0)
             {
                 context.globalAlpha = data.fillAlpha * worldAlpha;
-                context.fillStyle = '#' + ('00000' + ( fillColor | 0).toString(16)).substr(-6);
+                context.fillStyle = gradientFill || '#' + ('00000' + ( fillColor | 0).toString(16)).substr(-6);
                 context.fillRect(shape.x, shape.y, shape.width, shape.height);
 
             }
@@ -11227,7 +11240,7 @@ PIXI.CanvasGraphics.renderGraphics = function(graphics, context)
             if(data.fill)
             {
                 context.globalAlpha = data.fillAlpha * worldAlpha;
-                context.fillStyle = '#' + ('00000' + ( fillColor | 0).toString(16)).substr(-6);
+                context.fillStyle = gradientFill || '#' + ('00000' + ( fillColor | 0).toString(16)).substr(-6);
                 context.fill();
             }
             if(data.lineWidth)
@@ -11268,7 +11281,7 @@ PIXI.CanvasGraphics.renderGraphics = function(graphics, context)
             if(data.fill)
             {
                 context.globalAlpha = data.fillAlpha * worldAlpha;
-                context.fillStyle = '#' + ('00000' + ( fillColor | 0).toString(16)).substr(-6);
+                context.fillStyle = gradientFill || '#' + ('00000' + ( fillColor | 0).toString(16)).substr(-6);
                 context.fill();
             }
             if(data.lineWidth)
@@ -11304,7 +11317,7 @@ PIXI.CanvasGraphics.renderGraphics = function(graphics, context)
             if(data.fillColor || data.fillColor === 0)
             {
                 context.globalAlpha = data.fillAlpha * worldAlpha;
-                context.fillStyle = '#' + ('00000' + ( fillColor | 0).toString(16)).substr(-6);
+                context.fillStyle = gradientFill || '#' + ('00000' + ( fillColor | 0).toString(16)).substr(-6);
                 context.fill();
 
             }
@@ -11433,6 +11446,24 @@ PIXI.CanvasGraphics.renderGraphicsMask = function(graphics, context)
     }
 };
 
+PIXI.CanvasGraphics.getGradient = function(grd, context) {
+    if (!grd)
+        return null;
+
+    var gradientObj;
+    if (grd.linear) {
+        gradientObj = context.createLinearGradient(grd.x1, grd.y1, grd.x2, grd.y2);
+        
+    } else {
+        gradientObj = context.createRadialGradient(grd.cx1, grd.cy1, grd.radius1, grd.cx2, grd.cy2, grd.radius2);
+    }
+    for (var i=0; i<grd.colors.length; i++) {
+        var gcolor = grd.colors[i];
+        gradientObj.addColorStop(gcolor[0], gcolor[1]);
+    }
+    return gradientObj;
+};
+
 PIXI.CanvasGraphics.updateGraphicsTint = function(graphics)
 {
     if(graphics.tint === 0xFFFFFF)return;
@@ -11528,6 +11559,15 @@ PIXI.Graphics = function()
      * @private
      */
     this.graphicsData = [];
+
+    /**
+     * Contains the gradient fill data
+     *
+     * @property gradientFill
+     * @type Object
+     * @private
+     */
+    this.gradientFill = null;
 
     /**
      * The tint applied to the graphic shape. This is a hex value. Apply a value of 0xFFFFFF to reset the tint.
@@ -11984,6 +12024,7 @@ PIXI.Graphics.prototype.arc = function(cx, cy, radius, startAngle, endAngle, ant
  */
 PIXI.Graphics.prototype.beginFill = function(color, alpha)
 {
+    this.gradientFill = null;
     this.filling = true;
     this.fillColor = color || 0;
     this.fillAlpha = (alpha === undefined) ? 1 : alpha;
@@ -12000,6 +12041,39 @@ PIXI.Graphics.prototype.beginFill = function(color, alpha)
     return this;
 };
 
+PIXI.Graphics.prototype.beginLinearGradientFill = function(x1, y1, x2, y2, colors, alpha)
+{
+    this.gradientFill = {
+        linear: true,
+        x1: x1,
+        y1: y1,
+        x2: x2,
+        y2: y2,
+        colors: colors || []
+    };
+    this.filling = true;
+    this.fillColor = 0;
+    this.fillAlpha = (alpha === undefined) ? 1 : alpha;
+};
+
+
+PIXI.Graphics.prototype.beginRadialGradientFill = function(cx1, cy1, radius1, cx2, cy2, radius2, colors, alpha)
+{
+    this.gradientFill = {
+        linear: false,
+        cx1: cx1,
+        cy1: cy1,
+        cx2: cx2,
+        cy2: cy2,
+        radius1: radius1,
+        radius2: radius2,
+        colors: colors || []
+    };
+    this.filling = true;
+    this.fillColor = 0;
+    this.fillAlpha = (alpha === undefined) ? 1 : alpha;
+};
+
 /**
  * Applies a fill to the lines and shapes that were added since the last call to the beginFill() method.
  *
@@ -12009,6 +12083,7 @@ PIXI.Graphics.prototype.beginFill = function(color, alpha)
 PIXI.Graphics.prototype.endFill = function()
 {
     this.filling = false;
+    this.gradientFill = null;
     this.fillColor = null;
     this.fillAlpha = 1;
 
@@ -12563,7 +12638,7 @@ PIXI.Graphics.prototype.drawShape = function(shape)
 
     this.currentPath = null;
 
-    var data = new PIXI.GraphicsData(this.lineWidth, this.lineColor, this.lineAlpha, this.fillColor, this.fillAlpha, this.filling, shape);
+    var data = new PIXI.GraphicsData(this.lineWidth, this.lineColor, this.lineAlpha, this.fillColor, this.fillAlpha, this.filling, shape, this.gradientFill);
     
     this.graphicsData.push(data);
     
@@ -12584,7 +12659,7 @@ PIXI.Graphics.prototype.drawShape = function(shape)
  * @class GraphicsData
  * @constructor
  */
-PIXI.GraphicsData = function(lineWidth, lineColor, lineAlpha, fillColor, fillAlpha, fill, shape)
+PIXI.GraphicsData = function(lineWidth, lineColor, lineAlpha, fillColor, fillAlpha, fill, shape, gradientFill)
 {
     this.lineWidth = lineWidth;
     this.lineColor = lineColor;
@@ -12595,6 +12670,13 @@ PIXI.GraphicsData = function(lineWidth, lineColor, lineAlpha, fillColor, fillAlp
     this.fillAlpha = fillAlpha;
     this._fillTint = fillColor;
     this.fill = fill;
+
+    if (gradientFill) {
+        this.gradientFill = {};
+        for (var key in gradientFill) {
+            this.gradientFill[key] = gradientFill[key];
+        }
+    }
 
     this.shape = shape;
     this.type = shape.type;
@@ -20090,4 +20172,3 @@ Object.defineProperty(PIXI.RGBSplitFilter.prototype, 'blue', {
         root.PIXI = PIXI;
     }
 }).call(this);
-//# sourceMappingURL=pixi.dev.js.map

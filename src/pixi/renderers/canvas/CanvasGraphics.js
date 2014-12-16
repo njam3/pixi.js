@@ -323,8 +323,7 @@ PIXI.CanvasGraphics.getGradient = function(grd, context) {
         gradientObj = context.createLinearGradient(grd.x1, grd.y1, grd.x2, grd.y2);
         
     } else {
-        gradientObj = context.createRadialGradient(grd.cx1, grd.cy1, grd.radius1, 
-                                                   grd.cx2, grd.cy2, grd.radius2);
+        gradientObj = context.createRadialGradient(grd.cx1, grd.cy1, grd.radius1, grd.cx2, grd.cy2, grd.radius2);
     }
     for (var i=0; i<grd.colors.length; i++) {
         var gcolor = grd.colors[i];
